@@ -1,25 +1,28 @@
 import os
+import sys
+import base64
 from dotenv import load_dotenv
 
-# LangChain (v0.2 이후 구조)
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.vectorstores import Pinecone as PineconeVectorStore
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+# 🔧 sys.path를 가장 먼저 설정
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-# Pinecone
+from openai import OpenAI
+from langchain_openai import OpenAIEmbeddings
 from pinecone import Pinecone, ServerlessSpec
+from ai.config import config  # ✅ 이제 문제 없음
 
 # 1. 환경변수 로드
 load_dotenv()
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
-# 2. Pinecone 연결
+# 2. 클라이언트 초기화
+client = OpenAI(api_key=OPENAI_API_KEY)
+embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 pc = Pinecone(api_key=PINECONE_API_KEY)
-index_name = "meeting-template-index"
 
-# 3. 인덱스 없으면 생성
+# 3. 인덱스 설정
+index_name = "vision-template-index"
 if index_name not in pc.list_indexes().names():
     pc.create_index(
         name=index_name,
@@ -27,50 +30,51 @@ if index_name not in pc.list_indexes().names():
         metric="cosine",
         spec=ServerlessSpec(cloud="aws", region="us-east-1")
     )
-
-# 4. 인덱스 객체 준비
 index = pc.Index(index_name)
 
-# 5. 임베딩 모델 초기화
-embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-
-# 6. 문서 분할기 정의
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=80,
-    separators=["\n\n", "\n", " ", ""]
-)
-
-# 7. 템플릿 및 예시 목록 정의
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PDF_DIR = os.path.join(BASE_DIR, "data")  # utils/data 디렉토리
-
-pdf_documents = [
-    {"file": os.path.join(PDF_DIR, "Template_basic.pdf"),   "template_id": "basic_tem",   "type": "template"},
-    {"file": os.path.join(PDF_DIR, "Example_basic.pdf"),    "template_id": "basic_ex",   "type": "example"},
-    {"file": os.path.join(PDF_DIR, "Template_teacher.pdf"), "template_id": "teacher_tem", "type": "template"},
-    {"file": os.path.join(PDF_DIR, "Example_teacher.pdf"),  "template_id": "teacher_ex", "type": "example"},
-    {"file": os.path.join(PDF_DIR, "Template_teacher2.pdf"), "template_id": "teacher2_tem", "type": "template"}
+# 4. 이미지 템플릿 정의
+IMG_DIR = os.path.join(config.BASE_DIR, "ai", "images")
+image_documents = [
+    {"file": os.path.join(IMG_DIR, "basic_template.png"), "template_id": "basic_tem", "type": "template"},
 ]
 
-# 8. 전체 문서 조각화
-all_chunks = []
+# 5. GPT-Vision을 통한 설명 추출 함수
+def describe_image_with_gpt_vision(image_path: str) -> str:
+    with open(image_path, "rb") as f:
+        image_bytes = f.read()
+    base64_image = base64.b64encode(image_bytes).decode("utf-8")
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "이 이미지를 문서 템플릿의 레이아웃과 목적 중심으로 자세히 설명해줘."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+                ],
+            }
+        ],
+        max_tokens=1000,
+    )
+    return response.choices[0].message.content
 
-for doc_info in pdf_documents:
-    loader = PyPDFLoader(doc_info["file"])
-    pages = loader.load_and_split()
+# 6. 전체 이미지 처리 및 업로드
+for doc in image_documents:
+    print(f"🔍 GPT-Vision 설명 추출 중: {doc['file']}")
+    description = describe_image_with_gpt_vision(doc["file"])
+    print(f"✅ 설명 결과: {description[:100]}...")
 
-    for i, doc in enumerate(pages):
-        doc.metadata["template_id"] = doc_info["template_id"]
-        doc.metadata["type"] = doc_info["type"]
-        doc.metadata["page"] = i + 1
+    print(f"📡 임베딩 및 업로드 중: {doc['template_id']}")
+    vector = embedding_model.embed_query(description)
+    index.upsert([{
+        "id": doc["template_id"],
+        "values": vector,
+        "metadata": {
+            "template_id": doc["template_id"],
+            "type": doc["type"],
+            "source": os.path.basename(doc["file"]),
+            "description": description
+        }
+    }])
 
-    chunks = text_splitter.split_documents(pages)
-    all_chunks.extend(chunks)
-
-# 9. Pinecone에 업로드
-vectorstore = PineconeVectorStore.from_documents(
-    documents=all_chunks,
-    embedding=embedding_model,
-    index_name=index_name
-)
+print("✅ 이미지 기반 벡터 DB 구축 완료")

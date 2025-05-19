@@ -27,7 +27,8 @@ class TemplateToMarkdownAgent(Runnable):
 
         # 2. 프롬프트 입력 구성
         prompt_input = {
-            "template_reference": template_docs
+            "template_reference": template_docs,
+             "template_id": template_id 
         }
 
         # 3. LLM 호출
