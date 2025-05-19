@@ -1,8 +1,6 @@
 # download_document.py
-from fastapi import APIRouter, HTTPException, Path, Query
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, Path, Query, Response
 from app.config import settings
-from app.api.document_state import document_tasks
 from app.api.generate_document import latest_filename_state
 import os
 
@@ -37,17 +35,15 @@ async def download_document(
         if not user_filename.lower().endswith(f".{file_format}"):
             user_filename = f"{user_filename}.{file_format}"
 
-        content_type = MIME_TYPES.get(file_format, "application/octet-stream")
-        headers = {
-            "Content-Disposition": f'attachment; filename="{user_filename}"'
-        }
-
-        return FileResponse(
-            path=file_path,
-            filename=user_filename,
-            media_type=content_type,
-            headers=headers
-        )
+        # 파일 읽기
+        with open(file_path, "rb") as f:
+            file_content = f.read()
+        
+        # 가장 기본적인 Response 사용
+        response = Response(content=file_content, media_type=MIME_TYPES.get(file_format, "application/octet-stream"))
+        response.headers["Content-Disposition"] = f'attachment; filename="{user_filename}"'
+        
+        return response
 
     except HTTPException as he:
         raise he
