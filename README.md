@@ -1,182 +1,77 @@
-# AutoBrief Backend API
+# AutoBrief_Back_AI
 
-AutoBrief is an AI-powered document generation service that converts audio recordings into structured documents based on customizable templates.
+**AutoBrief_Back_AI**는 음성 파일을 업로드하면 AI가 지정된 템플릿과 파일 형식(docx, pdf, txt)으로 회의 요약문을 생성하고, 결과 문서를 다운로드할 수 있는 백엔드 API 서버입니다.
 
-## Features
+---
 
-- Upload audio files (mp3, wav, ogg, m4a)
-- Multiple document templates (meeting notes, lecture notes, medical rounds, reports)
-- Multiple output formats (DOCX, PDF, TXT)
-- RESTful API with JWT authentication
-- Asynchronous task processing
-- File upload and download handling
+## 빠른 시작 (Quick Start)
 
-## Prerequisites
+1. **의존성 설치**
+    ```bash
+    pip install -r requirements.txt
+    ```
+2. **환경 변수 설정**
+    - `.env` 파일을 프로젝트 루트에 복사/생성 후 값 입력
+3. **서버 실행**
+    ```bash
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    ```
+4. **Swagger UI 접속**
+    - [http://localhost:8000/docs](http://localhost:8000/docs)
+  
+<br>
 
-- Python 3.8+
-- pip (Python package manager)
-- Virtual environment (recommended)
+## API 명세 및 사용 예시
 
-## Installation
+### 1. 문서 생성 (POST `/api/v1/generate-document`)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd AutoBrief_Back_AI
-   ```
+- **curl 예시**
+    ```bash
+    curl -X POST "http://localhost:8000/api/v1/generate-document" \
+      -F "file=@sample.mp3" \
+      -F "template=meeting_minutes" \
+      -F "file_format=docx" \
+      -F "filename=회의록_2025"
+    ```
+- **성공 응답**
+    ```json
+    {
+      "summary": "회의 요약본 텍스트",
+      "filename": "회의록_2025",
+      "download_url": "/api/v1/download/1?file_format=docx"
+    }
+    ```
 
-2. **Create and activate a virtual environment**
-   ```bash
-   # On macOS/Linux
-   python3 -m venv venv
-   source venv/bin/activate
-   
-   # On Windows
-   # python -m venv venv
-   # .\venv\Scripts\activate
-   ```
+### 2. 문서 다운로드 (GET `/api/v1/download/1?file_format=docx`)
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+- **curl 예시**
+    ```bash
+    curl -X GET "http://localhost:8000/api/v1/download/1?file_format=docx" -OJ
+    ```
+- **성공 응답**: 파일 다운로드
+- **실패 응답** (문서 없음)
+    ```json
+    { "message": "해당 문서를 찾을 수 없습니다." }
+    ```
 
-4. **Set up environment variables**
-   Copy the `.env.example` to `.env` and update the values as needed:
-   ```bash
-   cp .env.example .env
-   ```
-   Edit the `.env` file with your configuration.
+<br>
 
-## Running the Application
+## 환경 변수(.env) 예시
 
-### Development Mode
+```env
+# 앱 세팅
+APP_NAME=AutoBrief API
+APP_VERSION=1.0.0
+DEBUG=True
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+# 서버
+HOST=0.0.0.0
+PORT=8000
 
-The API will be available at `http://localhost:8000`
-
-### Production Mode
-
-For production, you should use a production-grade ASGI server like Uvicorn with Gunicorn:
-
-```bash
-pip install gunicorn
-
-gunicorn -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:8000 app.main:app
-```
-
-## API Documentation
-
-Once the server is running, you can access the interactive API documentation at:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
-## Testing
-
-To run the test suite:
-
-```bash
-pytest tests/
-```
-
-## Project Structure
-
-```
-AutoBrief_Back_AI/
-├── app/                      # Main application package
-│   ├── __init__.py
-│   ├── main.py               # FastAPI application
-│   ├── config.py             # Application configuration
-│   ├── api/                  # API routes
-│   │   ├── __init__.py
-│   │   ├── generate_document.py  # Document generation endpoints
-│   │   └── download_document.py  # Document download endpoints
-│   └── dependencies/         # Application dependencies
-│       ├── __init__.py
-│       ├── security.py       # Authentication and security
-│       └── file_utils.py     # File handling utilities
-├── tests/                    # Test files
-│   ├── __init__.py
-│   ├── conftest.py           # Test fixtures
-│   └── test_api.py           # API tests
-├── .env                      # Environment variables
-├── .gitignore
-├── requirements.txt          # Python dependencies
-└── README.md
-```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `APP_NAME` | Application name | `AutoBrief API` |
-| `APP_VERSION` | Application version | `1.0.0` |
-| `DEBUG` | Debug mode | `False` |
-| `SECRET_KEY` | Secret key for JWT | `your-secret-key-here` |
-| `ALGORITHM` | JWT algorithm | `HS256` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token expiration time | `30` |
-| `HOST` | Server host | `0.0.0.0` |
-| `PORT` | Server port | `8000` |
-| `UPLOAD_FOLDER` | Directory for uploaded files | `./uploads` |
-| `MAX_CONTENT_LENGTH` | Maximum file size (bytes) | `16777216` (16MB) |
-| `ALLOWED_EXTENSIONS` | Allowed file extensions | `mp3,wav,ogg,m4a` |
-| `AI_SERVICE_URL` | URL of the AI service | `http://localhost:8001` |
-
-## API Endpoints
-
-### Authentication
-- `POST /token` - Get access token (Basic Auth)
-- `GET /api/test-auth` - Test authentication (requires auth)
-
-### Document Generation
-- `POST /api/generate/` - Generate a document from an audio file
-- `GET /api/generate/status/{task_id}` - Check generation status
-
-### Document Download
-- `GET /api/download/{task_id}` - Download a generated document
-
-### Health Check
-- `GET /health` - Health check endpoint
-
-## Deployment
-
-### Docker
-
-1. Build the Docker image:
-   ```bash
-   docker build -t autobrief-backend .
-   ```
-
-2. Run the container:
-   ```bash
-   docker run -d -p 8000:8000 --env-file .env autobrief-backend
-   ```
-
-### Cloud Deployment
-
-For production deployment, consider using:
-- AWS ECS/EKS
-- Google Cloud Run
-- Azure Container Instances
-- Heroku
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- FastAPI for the awesome web framework
-- Uvicorn for the ASGI server
-- All contributors and team members
+# 파일 저장 설정
+UPLOAD_FOLDER=./uploads
+AI_OUTPUT_FOLDER=./outputs
+AI_SERVICE_URL=http://localhost:8001

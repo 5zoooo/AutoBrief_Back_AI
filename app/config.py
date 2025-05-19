@@ -1,6 +1,6 @@
 # config.py
 from pydantic import BaseSettings
-from typing import List, Set
+from typing import Set
 import os
 from dotenv import load_dotenv
 from enum import Enum

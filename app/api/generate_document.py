@@ -40,7 +40,9 @@ async def generate_document(
             filename = f"{filename}.{file_format}"
 
         # 파일 저장
-        saved_file_path = await save_uploaded_file(file, settings.UPLOAD_FOLDER)
+        file_extension = file.filename.split('.')[-1].lower()
+        fixed_filename = f"audio_file.{file_extension}"
+        saved_file_path = await save_uploaded_file(file, settings.UPLOAD_FOLDER, fixed_filename)
 
         # 요약문 생성(임시)
         summary = f"{template} 템플릿으로 생성된 요약본입니다."
