@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     
     # 파일 설정
     UPLOAD_FOLDER: str = os.getenv("UPLOAD_FOLDER", "./uploads")  # 파일 업로드 경로
-    AI_OUTPUT_FOLDER: str = os.getenv("AI_OUTPUT_FOLDER", "../ai/outputs")  # AI 출력 파일 경로
+    AI_OUTPUT_FOLDER: str = os.getenv("AI_OUTPUT_FOLDER", "./ai/outputs")  # AI 출력 파일 경로
     # 16MB in bytes (16 * 1024 * 1024)
     MAX_CONTENT_LENGTH: int = 16_777_216  # 최대 파일 크기 (16MB)
     # 허용되는 오디오 파일 확장자 (환경변수 대신 코드 내에서 직접 설정)

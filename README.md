@@ -4,6 +4,8 @@
 
 ---
 
+<br>
+
 ## 빠른 시작 (Quick Start)
 
 1. **의존성 설치**
@@ -36,8 +38,6 @@
 - **성공 응답**
     ```json
     {
-      "summary": "회의 요약본 텍스트",
-      "filename": "회의록_2025",
       "download_url": "/api/v1/download/1?file_format=docx"
     }
     ```
@@ -48,7 +48,7 @@
     ```bash
     curl -X GET "http://localhost:8000/api/v1/download/1?file_format=docx" -OJ
     ```
-- **성공 응답**: 파일 다운로드
+- **성공 응답**: 파일 다운로드 (사용자가 지정한 파일명으로 저장됨)
 - **실패 응답** (문서 없음)
     ```json
     { "message": "해당 문서를 찾을 수 없습니다." }
