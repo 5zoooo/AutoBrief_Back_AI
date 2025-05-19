@@ -2,7 +2,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.vectorstores import Pinecone as PineconeVectorStore
+from langchain_pinecone import PineconeVectorStore
 
 class TemplateGeneratorAgent(Runnable):
     def __init__(self, vectorstore: PineconeVectorStore, prompt_path: str, llm=None):
@@ -15,7 +15,9 @@ class TemplateGeneratorAgent(Runnable):
 
     def invoke(self, template_id: str) -> str:
         results = self.vectorstore.similarity_search(template_id, k=3)
-        reference = "\n\n".join([doc.page_content for doc in results if doc.metadata.get("type") == "template"])
+        reference = "\n\n".join([
+            doc.page_content for doc in results if doc.metadata.get("type") == "template"
+        ])
         prompt_input = {
             "template_reference": reference,
             "template_id": template_id

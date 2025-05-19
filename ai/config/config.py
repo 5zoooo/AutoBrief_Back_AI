@@ -3,12 +3,12 @@
 import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Pinecone as PineconeVectorStore
+from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 
 from ai.agents.summarizer_agent import MeetingSummaryAgent
-from ai.agents.markdown_converter_agent import TemplateToMarkdownAgent
-from ai.agents.report_builder_agent import FinalDocumentAgent
+from ai.agents.markdown_converter_agent import TemplateGeneratorAgent
+from ai.agents.report_builder_agent import FinalReportAgent
 
 # -----------------------------
 # 📁 경로 설정
@@ -42,12 +42,12 @@ summary_agent = MeetingSummaryAgent(
     prompt_path=os.path.join(PROMPT_DIR, "summarizer_prompt.txt")
 )
 
-markdown_agent = TemplateToMarkdownAgent(
+markdown_agent = TemplateGeneratorAgent(
     vectorstore=vectorstore,
     prompt_path=os.path.join(PROMPT_DIR, "markdown_format_prompt.txt")
 )
 
-final_doc_agent = FinalDocumentAgent(
+final_doc_agent = FinalReportAgent(
     vectorstore=vectorstore,
     prompt_path=os.path.join(PROMPT_DIR, "report_building_prompt.txt")
 )

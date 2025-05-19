@@ -1,7 +1,7 @@
 from langchain_core.runnables import Runnable
 from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
 
 class MeetingSummaryAgent(Runnable):
     def __init__(self, prompt_path: str, llm=None):
@@ -11,6 +11,7 @@ class MeetingSummaryAgent(Runnable):
         self.llm = llm or ChatOpenAI(temperature=0.2)
         self.output_parser = StrOutputParser()
 
-    def invoke(self, input_text: str) -> str:
+    def invoke(self, raw_text: str) -> str:
+        prompt_input = {"raw_text": raw_text}
         chain = self.prompt_template | self.llm | self.output_parser
-        return chain.invoke({"raw_text": input_text})
+        return chain.invoke(prompt_input)

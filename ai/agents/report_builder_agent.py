@@ -1,3 +1,9 @@
+from langchain_core.runnables import Runnable
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+from langchain_community.vectorstores import Pinecone as PineconeVectorStore
+
 class FinalReportAgent(Runnable):
     def __init__(self, vectorstore: PineconeVectorStore, prompt_path: str, llm=None):
         with open(prompt_path, "r", encoding="utf-8") as f:
@@ -8,9 +14,10 @@ class FinalReportAgent(Runnable):
         self.output_parser = StrOutputParser()
 
     def invoke(self, inputs: dict) -> str:
-        # inputs: {summary_text, template_id, markdown_format (from 2번)}
         results = self.vectorstore.similarity_search(inputs["template_id"], k=2)
-        example_reference = "\n\n".join([doc.page_content for doc in results if doc.metadata.get("type") == "example"])
+        example_reference = "\n\n".join([
+            doc.page_content for doc in results if doc.metadata.get("type") == "example"
+        ])
         prompt_input = {
             "summary_text": inputs["summary_text"],
             "markdown_format": inputs["markdown_format"],
