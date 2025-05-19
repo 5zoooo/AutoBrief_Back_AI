@@ -1,9 +1,13 @@
 import os
 from dotenv import load_dotenv
-from langchain.document_loaders import PyPDFLoader
+
+# LangChain (v0.2 이후 구조)
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import Pinecone as PineconeVectorStore
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Pinecone as PineconeVectorStore
+from langchain_openai import OpenAIEmbeddings
+
+# Pinecone
 from pinecone import Pinecone, ServerlessSpec
 
 # 1. 환경변수 로드
@@ -37,29 +41,34 @@ text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", " ", ""]
 )
 
-# 7. 회의록 템플릿 PDF 목록 + 명시적 메타데이터 지정
-pdf_templates = [
-    {"file": "Template_Executive.pdf", "template_id": "exec", "template_name": "executive_summary"},
-    {"file": "Template_Discussion.pdf", "template_id": "discussion", "template_name": "team_discussion"},
-    {"file": "Template_TechSpec.pdf", "template_id": "tech", "template_name": "technical_spec"}
+# 7. 템플릿 및 예시 목록 정의
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PDF_DIR = os.path.join(BASE_DIR, "data")  # utils/data 디렉토리
+
+pdf_documents = [
+    {"file": os.path.join(PDF_DIR, "Template_basic.pdf"),   "template_id": "basic",   "type": "template"},
+    {"file": os.path.join(PDF_DIR, "Example_basic.pdf"),    "template_id": "basic",   "type": "example"},
+    {"file": os.path.join(PDF_DIR, "Template_teacher.pdf"), "template_id": "teacher", "type": "template"},
+    {"file": os.path.join(PDF_DIR, "Example_teacher.pdf"),  "template_id": "teacher", "type": "example"},
+    {"file": os.path.join(PDF_DIR, "Template_teacher2.pdf"), "template_id": "teacher2", "type": "template"}
 ]
 
-# 8. 전체 분할된 문서 저장 리스트
+# 8. 전체 문서 조각화
 all_chunks = []
 
-for tpl in pdf_templates:
-    loader = PyPDFLoader(tpl["file"])
+for doc_info in pdf_documents:
+    loader = PyPDFLoader(doc_info["file"])
     pages = loader.load_and_split()
 
     for i, doc in enumerate(pages):
-        doc.metadata["template_id"] = tpl["template_id"]
-        doc.metadata["template_name"] = tpl["template_name"]
+        doc.metadata["template_id"] = doc_info["template_id"]
+        doc.metadata["type"] = doc_info["type"]
         doc.metadata["page"] = i + 1
 
     chunks = text_splitter.split_documents(pages)
     all_chunks.extend(chunks)
 
-# 9. Pinecone에 벡터 업로드
+# 9. Pinecone에 업로드
 vectorstore = PineconeVectorStore.from_documents(
     documents=all_chunks,
     embedding=embedding_model,
