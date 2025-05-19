@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from fastapi.responses import FileResponse
 from app.config import settings
 from app.api.document_state import document_tasks
+from app.api.generate_document import latest_filename_state
 import os
 
 router = APIRouter(
@@ -26,22 +27,24 @@ async def download_document(
         if document_id != 1:
             raise HTTPException(status_code=404, detail={"message": "해당 문서를 찾을 수 없습니다."})
 
-        task = document_tasks.get(1)
-        if not task:
-            raise HTTPException(status_code=404, detail={"message": "해당 문서를 찾을 수 없습니다."})
-
-        file_path = os.path.join(settings.AI_OUTPUT_FOLDER, task.filename)
+        # AI가 생성한 output_file.{확장자} 파일 경로 확인
+        file_path = os.path.join(settings.AI_OUTPUT_FOLDER, f"output_file.{file_format}")
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail={"message": "해당 문서를 찾을 수 없습니다."})
+        
+        # 사용자가 요청한 filename 가져오기 (없으면 기본값)
+        user_filename = latest_filename_state.get(1, f"output_file")
+        if not user_filename.lower().endswith(f".{file_format}"):
+            user_filename = f"{user_filename}.{file_format}"
 
         content_type = MIME_TYPES.get(file_format, "application/octet-stream")
         headers = {
-            "Content-Disposition": f'attachment; filename="{task.filename}"'
+            "Content-Disposition": f'attachment; filename="{user_filename}"'
         }
 
         return FileResponse(
             path=file_path,
-            filename=task.filename,
+            filename=user_filename,
             media_type=content_type,
             headers=headers
         )

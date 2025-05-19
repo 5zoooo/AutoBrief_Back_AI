@@ -20,12 +20,14 @@ class DocumentRequest:
         self.filename = filename
         self.summary = summary
 
+latest_filename_state = {}
+
 @router.post("/generate-document", status_code=status.HTTP_201_CREATED)
 async def generate_document(
     file: UploadFile = File(...),
     template: str = Form(...),
     file_format: str = Form(...),
-    filename: Optional[str] = Form(None)
+    filename: str = Form(...)
 ):
     try:
         if template not in settings.TEMPLATES:
@@ -50,13 +52,10 @@ async def generate_document(
         # 항상 document_id=1로 저장 (덮어쓰기)
         doc_req = DocumentRequest(file, template, file_format, filename, summary)
         document_tasks[1] = doc_req
-
-        download_url = f"{settings.API_V1_STR}/download/1?file_format={file_format}"
+        latest_filename_state[1] = filename
 
         return {
-            "summary": summary,
-            "filename": filename.replace(f".{file_format}", ""),
-            "download_url": download_url
+            "download_url": f"/api/v1/download/1?file_format={file_format}"
         }
 
     except HTTPException as he:
