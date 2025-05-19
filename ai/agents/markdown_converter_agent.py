@@ -18,17 +18,19 @@ class TemplateToMarkdownAgent(Runnable):
             template_str = f.read()
         return PromptTemplate.from_template(template_str)
 
-    def invoke(self, input_text: str) -> str:
-        # 1. 템플릿 내용 검색
-        results = self.vectorstore.similarity_search(input_text, k=3)
-        template_docs = "\n\n".join([doc.page_content for doc in results if doc.metadata.get("type") == "template"])
+    def invoke(self, template_id: str) -> str:
+        # 1. 템플릿 문서 검색
+        results = self.vectorstore.similarity_search(template_id, k=3)
+        template_docs = "\n\n".join([
+            doc.page_content for doc in results if doc.metadata.get("type") == "template"
+        ])
 
-        # 2. 프롬프트 구성
+        # 2. 프롬프트 입력 구성
         prompt_input = {
-            "input_text": input_text,
             "template_reference": template_docs
         }
 
-        # 3. LLM 실행
+        # 3. LLM 호출
         chain = self.prompt_template | self.llm | self.output_parser
         return chain.invoke(prompt_input)
+

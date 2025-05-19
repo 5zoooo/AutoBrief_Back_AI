@@ -46,11 +46,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PDF_DIR = os.path.join(BASE_DIR, "data")  # utils/data 디렉토리
 
 pdf_documents = [
-    {"file": os.path.join(PDF_DIR, "Template_basic.pdf"),   "template_id": "basic",   "type": "template"},
-    {"file": os.path.join(PDF_DIR, "Example_basic.pdf"),    "template_id": "basic",   "type": "example"},
-    {"file": os.path.join(PDF_DIR, "Template_teacher.pdf"), "template_id": "teacher", "type": "template"},
-    {"file": os.path.join(PDF_DIR, "Example_teacher.pdf"),  "template_id": "teacher", "type": "example"},
-    {"file": os.path.join(PDF_DIR, "Template_teacher2.pdf"), "template_id": "teacher2", "type": "template"}
+    {"file": os.path.join(PDF_DIR, "Template_basic.pdf"),   "template_id": "basic_tem",   "type": "template"},
+    {"file": os.path.join(PDF_DIR, "Example_basic.pdf"),    "template_id": "basic_ex",   "type": "example"},
+    {"file": os.path.join(PDF_DIR, "Template_teacher.pdf"), "template_id": "teacher_tem", "type": "template"},
+    {"file": os.path.join(PDF_DIR, "Example_teacher.pdf"),  "template_id": "teacher_ex", "type": "example"},
+    {"file": os.path.join(PDF_DIR, "Template_teacher2.pdf"), "template_id": "teacher2_tem", "type": "template"}
 ]
 
 # 8. 전체 문서 조각화
