@@ -37,23 +37,23 @@ text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", " ", ""]
 )
 
-# 7. 임베딩할 PDF 파일 목록
-pdf_files = [
-    ("AI News.pdf", "ai_news"),
-    ("Startup Evaluation Metrics.pdf", "startup_metrics"),
-    ("VoyagerX Introduction.pdf", "voyagerx_intro"),
-    ("Video Stt Script.pdf", "video_stt_script")
+# 7. 회의록 템플릿 PDF 목록 + 명시적 메타데이터 지정
+pdf_templates = [
+    {"file": "Template_Executive.pdf", "template_id": "exec", "template_name": "executive_summary"},
+    {"file": "Template_Discussion.pdf", "template_id": "discussion", "template_name": "team_discussion"},
+    {"file": "Template_TechSpec.pdf", "template_id": "tech", "template_name": "technical_spec"}
 ]
 
 # 8. 전체 분할된 문서 저장 리스트
 all_chunks = []
 
-for filename, doc_id in pdf_files:
-    loader = PyPDFLoader(filename)
+for tpl in pdf_templates:
+    loader = PyPDFLoader(tpl["file"])
     pages = loader.load_and_split()
 
     for i, doc in enumerate(pages):
-        doc.metadata["source"] = doc_id
+        doc.metadata["template_id"] = tpl["template_id"]
+        doc.metadata["template_name"] = tpl["template_name"]
         doc.metadata["page"] = i + 1
 
     chunks = text_splitter.split_documents(pages)
