@@ -97,3 +97,14 @@ ALLOWED_EXTENSIONS=mpeg
 
 # AI 서비스 설정
 AI_SERVICE_URL=http://localhost:8001
+
+# 검색/DB/외부 API 키
+SERPER_API_KEY=**********
+QDRANT_API_KEY=**********
+QDRANT_URL=**********
+TAVILY_API_KEY=**********
+POLYGON_API_KEY=**********
+GNEWS_API_KEY=**********
+PINECONE_API_KEY=**********
+OPENAI_API_KEY=**********
+LANGSMITH_API_KEY=**********
