@@ -1,6 +1,6 @@
 # config.py
-from pydantic import BaseSettings
-from typing import Set
+from pydantic_settings import BaseSettings
+from typing import Set, ClassVar, List
 import os
 from dotenv import load_dotenv
 from enum import Enum
@@ -41,15 +41,17 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: Set[str] = {"mpeg"}
     
     # 템플릿 및 파일 형식
-    TEMPLATES = ["lecture_note", "meeting_minutes", "ward_round", "report"]
-    FILE_FORMATS = ["docx", "pdf", "txt"]
+    TEMPLATES: ClassVar[List[str]] = ["lecture_note", "meeting_minutes", "ward_round", "report"]
+    FILE_FORMATS: ClassVar[List[str]] = ["docx", "pdf", "txt"]
     
     # AI 서비스 URL (필요시 사용)
     AI_SERVICE_URL: str = os.getenv("AI_SERVICE_URL", "http://localhost:8001")
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "allow"  # 추가 필드 허용
+    }
 
 # Create settings instance
 settings = Settings()
