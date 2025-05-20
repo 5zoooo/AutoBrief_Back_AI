@@ -21,7 +21,7 @@ class TemplatePdfWriterAgent(Runnable):
             html_content = f"<div>{html_content}</div>"
 
         # 📝 PDF 저장 경로 정의
-        output_path = os.path.join(self.output_dir, "generated_template.pdf")
+        output_path = os.path.join(self.output_dir, "output_file.pdf")
 
         # 🖨️ PDF 생성
         HTML(string=html_content).write_pdf(output_path)

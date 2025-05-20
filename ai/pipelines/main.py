@@ -15,7 +15,7 @@ from langchain_openai import ChatOpenAI
 
 # 3. 설정
 TEMPLATE_ID = "basic_tem"
-AUDIO_PATH = os.path.join(config.BASE_DIR, "ai", "uploads", "input_audio.mp3")  # ✅ 오디오 파일 입력
+AUDIO_PATH = os.path.join(config.BASE_DIR, "uploads", "input_audio.mp3")  # ✅ 오디오 파일 입력
 
 # 4. 프롬프트 경로
 structure_prompt_path = os.path.join(config.PROMPT_DIR, "template_structure_prompt.txt")
@@ -38,7 +38,7 @@ summarizer_agent = TemplateSummarizerAgent(
 )
 
 pdf_writer_agent = TemplatePdfWriterAgent(
-    output_dir=os.path.join(config.BASE_DIR, "ai", "outputs")
+    output_dir=os.path.join(config.BASE_DIR, "outputs")
 )
 
 def run_pipeline():
