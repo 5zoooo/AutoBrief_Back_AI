@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 
 # 1. 경로 설정
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -10,12 +9,13 @@ from ai.config import config
 from ai.config import template_image_path_map, vision_client
 from ai.agents.template_structure_agent import TemplateStructureAgent
 from ai.agents.template_summarizer_agent import TemplateSummarizerAgent
-from ai.agents.template_pdf_writer_agent import TemplatePdfWriterAgent  # ✅ PDF용 에이전트로 변경
+from ai.agents.template_pdf_writer_agent import TemplatePdfWriterAgent
+from ai.pipelines.audio_to_text import audio_file_to_text  # ✅ STT 추가
 from langchain_openai import ChatOpenAI
 
 # 3. 설정
 TEMPLATE_ID = "basic_tem"
-TEXT_PATH = os.path.join(config.BASE_DIR, "ai", "uploads", "audio_text.txt")
+AUDIO_PATH = os.path.join(config.BASE_DIR, "ai", "uploads", "input_audio.mp3")  # ✅ 오디오 파일 입력
 
 # 4. 프롬프트 경로
 structure_prompt_path = os.path.join(config.PROMPT_DIR, "template_structure_prompt.txt")
@@ -37,14 +37,14 @@ summarizer_agent = TemplateSummarizerAgent(
     llm=llm
 )
 
-pdf_writer_agent = TemplatePdfWriterAgent(  # ✅ docx → pdf
+pdf_writer_agent = TemplatePdfWriterAgent(
     output_dir=os.path.join(config.BASE_DIR, "ai", "outputs")
 )
 
 def run_pipeline():
-    # 1. 텍스트 불러오기
-    with open(TEXT_PATH, "r", encoding="utf-8") as f:
-        raw_text = f.read()
+    print("🎙️ [0] 음성 → 텍스트 변환 중...")
+    raw_text = audio_file_to_text(AUDIO_PATH)
+    print("[결과] 추출된 텍스트:\n", raw_text[:300], "\n")
 
     print("\n🧱 [1] 템플릿 구조 분석 중...")
     template_structure = structure_agent.invoke({
@@ -62,8 +62,7 @@ def run_pipeline():
 
     print("📄 [3] PDF 문서로 내보내는 중...")
     file_path = pdf_writer_agent.invoke({
-        "template_structure": template_structure,
-        "summary_text": summary_text
+        "summary_text": summary_text  # ✅ template_structure 제거됨
     })
 
     print(f"\n✅ 최종 PDF 보고서 생성 완료: {file_path}")
