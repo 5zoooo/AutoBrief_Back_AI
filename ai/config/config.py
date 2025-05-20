@@ -6,18 +6,13 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 
-from ai.agents.summarizer_agent import MeetingSummaryAgent
-from ai.agents.markdown_converter_agent import TemplateGeneratorAgent
-from ai.agents.report_builder_agent import FinalReportAgent
-
 # -----------------------------
 # 📁 경로 설정
 # -----------------------------
-# 프로젝트 루트 기준
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-PROMPT_DIR = os.path.join(BASE_DIR,"ai", "prompts")
-UPLOAD_DIR = os.path.join(BASE_DIR,"ai", "uploads")
-ENV_PATH = os.path.join(BASE_DIR,"ai", ".env")
+PROMPT_DIR = os.path.join(BASE_DIR, "ai", "prompts")
+UPLOAD_DIR = os.path.join(BASE_DIR, "ai", "uploads")
+ENV_PATH = os.path.join(BASE_DIR, "ai", ".env")
 
 # -----------------------------
 # 🔐 환경 변수 로딩
@@ -34,20 +29,3 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(INDEX_NAME)
 embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 vectorstore = PineconeVectorStore(index=index, embedding=embedding_model, text_key="text")
-
-# -----------------------------
-# 🤖 에이전트 초기화
-# -----------------------------
-summary_agent = MeetingSummaryAgent(
-    prompt_path=os.path.join(PROMPT_DIR, "summarizer_prompt.txt")
-)
-
-markdown_agent = TemplateGeneratorAgent(
-    vectorstore=vectorstore,
-    prompt_path=os.path.join(PROMPT_DIR, "markdown_format_prompt.txt")
-)
-
-final_doc_agent = FinalReportAgent(
-    vectorstore=vectorstore,
-    prompt_path=os.path.join(PROMPT_DIR, "report_building_prompt.txt")
-)
