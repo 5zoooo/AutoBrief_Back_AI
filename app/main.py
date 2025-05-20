@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from app.config import settings
-from app.api import generate_document, download_document
+from app.api import generate_document, download_document, check_status
 
 # FastAPI 애플리케이션 생성
 app = FastAPI(
@@ -37,6 +37,7 @@ app.mount("/ai-outputs", StaticFiles(directory=settings.AI_OUTPUT_FOLDER), name=
 # API 라우터 등록
 app.include_router(generate_document.router)  # 문서 생성 API
 app.include_router(download_document.router)  # 문서 다운로드 API
+app.include_router(check_status.router)  # 문서 상태 확인 API
 
 @app.get("/", tags=["Root"])
 async def root():
