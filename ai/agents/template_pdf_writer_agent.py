@@ -1,6 +1,7 @@
 from langchain_core.runnables import Runnable
 from weasyprint import HTML
 import os
+import re
 
 class TemplatePdfWriterAgent(Runnable):
     def __init__(self, output_dir: str = "./outputs"):
@@ -11,17 +12,18 @@ class TemplatePdfWriterAgent(Runnable):
         # ✅ summary_text만 사용하여 PDF 생성
         summary_text = inputs["summary_text"]
 
-        # HTML 형식이 아닐 경우 <div>로 감싸기
-        summary_html = (
-            f"<div>{summary_text.strip()}</div>"
-            if not summary_text.strip().startswith("<")
-            else summary_text.strip()
-        )
+        # 🔍 ```html ... ``` 코드 블록이 있으면 그 내부만 추출
+        match = re.search(r"```html\s*(.*?)```", summary_text, re.DOTALL)
+        html_content = match.group(1).strip() if match else summary_text.strip()
 
-        # PDF 파일 경로 정의
+        # ✅ HTML 형식이 아닐 경우 <div>로 감싸기
+        if not html_content.startswith("<"):
+            html_content = f"<div>{html_content}</div>"
+
+        # 📝 PDF 저장 경로 정의
         output_path = os.path.join(self.output_dir, "generated_template.pdf")
 
-        # PDF 생성
-        HTML(string=summary_html).write_pdf(output_path)
+        # 🖨️ PDF 생성
+        HTML(string=html_content).write_pdf(output_path)
 
         return output_path
