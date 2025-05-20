@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     AI_OUTPUT_FOLDER: str = os.getenv("AI_OUTPUT_FOLDER", "./ai/outputs")  # AI 출력 파일 경로
     # 16MB in bytes (16 * 1024 * 1024)
     MAX_CONTENT_LENGTH: int = 16_777_216  # 최대 파일 크기 (16MB)
-    # 허용되는 오디오 파일 확장자 (mp3로 통일)
-    ALLOWED_EXTENSIONS: Set[str] = {"mp3"}
+    # 허용되는 오디오 파일 확장자 (mpeg로 통일)
+    ALLOWED_EXTENSIONS: Set[str] = {"mpeg"}
     
     # 템플릿 및 파일 형식
     TEMPLATES = ["lecture_note", "meeting_minutes", "ward_round", "report"]

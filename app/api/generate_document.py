@@ -43,14 +43,14 @@ async def generate_document(
 
         # 파일 확장자 확인
         file_extension = get_file_extension(file.filename)
-        if file_extension != "mp3":
-            raise HTTPException(status_code=400, detail={"message": "mp3 파일만 지원합니다."})
+        if file_extension != "mpeg":
+            raise HTTPException(status_code=400, detail={"message": "mpeg 파일만 지원합니다."})
             
         # 문서 처리 상태 초기화 - 처리 시작
         document_state.start_processing(filename, file_format)
         
-        # 파일 저장 - 항상 mp3로 저장
-        fixed_filename = "audio_file.mp3"
+        # 파일 저장 - 항상 mpeg로 저장
+        fixed_filename = "audio_file.mpeg"
         saved_file_path = await save_uploaded_file(file, settings.UPLOAD_FOLDER, fixed_filename)
 
         # 요약문 생성(임시)

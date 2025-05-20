@@ -1,6 +1,6 @@
 # AutoBrief_Back_AI
 
-**AutoBrief_Back_AI**는 음성 파일을 업로드하면 AI가 지정된 템플릿과 파일 형식(docx, pdf, txt)으로 회의 요약문을 생성하고, 결과 문서를 다운로드할 수 있는 백엔드 API 서버입니다.
+**AutoBrief_Back_AI**는 오디오 파일(mpeg)을 업로드하면 AI가 지정된 템플릿과 파일 형식(docx, pdf, txt)으로 회의 요약문을 생성하고, 결과 문서를 다운로드할 수 있는 백엔드 API 서버입니다.
 
 ---
 
@@ -30,7 +30,7 @@
 - **curl 예시**
     ```bash
     curl -X POST "http://localhost:8000/api/v1/generate-document" \
-      -F "file=@sample.mp3" \
+      -F "file=@sample.mpeg" \
       -F "template=meeting_minutes" \
       -F "file_format=docx" \
       -F "filename=회의록_2025"
@@ -54,6 +54,23 @@
     { "message": "해당 문서를 찾을 수 없습니다." }
     ```
 
+### 3. 문서 처리 상태 확인 (GET `/api/v1/status/1`)
+
+- **curl 예시**
+    ```bash
+    curl -X GET "http://localhost:8000/api/v1/status/1"
+    ```
+- **성공 응답**
+    ```json
+    {
+      "status": "completed"  // "waiting", "processing", "completed", "failed" 중 하나
+    }
+    ```
+- **실패 응답** (서버 오류)
+    ```json
+    { "detail": { "message": "상태 확인 중 오류가 발생했습니다." } }
+    ```
+
 <br>
 
 ## 환경 변수(.env) 예시
@@ -73,5 +90,10 @@ PORT=8000
 
 # 파일 저장 설정
 UPLOAD_FOLDER=./uploads
-AI_OUTPUT_FOLDER=./outputs
+AI_OUTPUT_FOLDER=./ai/outputs
+
+# 허용된 파일 형식
+ALLOWED_EXTENSIONS=mpeg
+
+# AI 서비스 설정
 AI_SERVICE_URL=http://localhost:8001
