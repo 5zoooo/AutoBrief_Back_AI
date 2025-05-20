@@ -35,7 +35,8 @@ index = pc.Index(index_name)
 # 4. 이미지 템플릿 정의
 IMG_DIR = os.path.join(config.BASE_DIR, "ai", "images")
 image_documents = [
-    {"file": os.path.join(IMG_DIR, "basic_template.png"), "template_id": "basic_tem", "type": "template"},
+    # {"file": os.path.join(IMG_DIR, "basic_template.png"), "template_id": "basic_tem", "type": "template"},
+    {"file": os.path.join(IMG_DIR, "basic_template_2.png"), "template_id": "basic_tem", "type": "template"},
 ]
 
 # 5. GPT-Vision을 통한 설명 추출 함수
