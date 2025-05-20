@@ -1,3 +1,5 @@
+# ai/agents/template_summarizer_agent.py
+
 from langchain_core.runnables import Runnable
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -14,8 +16,8 @@ class TemplateSummarizerAgent(Runnable):
     def invoke(self, inputs: dict) -> str:
         """
         inputs: {
-            "raw_text": str,
-            "template_structure": str
+            "raw_text": str,              # 원문 텍스트 (예: OCR 결과, STT 결과 등)
+            "template_structure": str     # HTML 마크업 형태의 템플릿 구조
         }
         """
         prompt_input = {
