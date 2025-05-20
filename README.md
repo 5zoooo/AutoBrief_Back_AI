@@ -8,7 +8,19 @@
 
 ## 빠른 시작 (Quick Start)
 
-1. **의존성 설치**
+1. **가상환경 설정 (권장)**
+    ```bash
+    # 가상환경 생성
+    python -m venv venv
+    
+    # 가상환경 활성화 (macOS/Linux)
+    source venv/bin/activate
+    
+    # 가상환경 활성화 (Windows)
+    # venv\Scripts\activate
+    ```
+
+2. **의존성 설치**
     ```bash
     pip install -r requirements.txt
     ```
